@@ -1,0 +1,45 @@
+skills:
+  - id: python
+    name: Python
+    category: Programming Language
+  - id: javascript
+    name: JavaScript
+    category: Programming Language
+  - id: react
+    name: React
+    category: Frontend Framework
+  - id: nextjs
+    name: Next.js
+    category: Frontend Framework
+  - id: nlp
+    name: Natural Language Processing
+    category: Machine Learning
+  - id: ai
+    name: Artificial Intelligence
+    category: Machine Learning
+  - id: rag
+    name: Retrieval-Augmented Generation
+    category: AI Technique
+  - id: fastapi
+    name: FastAPI
+    category: Backend Framework
+  - id: huggingface
+    name: Hugging Face Transformers
+    category: AI Tools
+  - id: chromadb
+    name: ChromaDB
+    category: Database
+
+projects:
+  - id: ai_portfolio
+    name: AI-Powered Portfolio Website
+    uses: [nextjs, fastapi, rag, chromadb, huggingface]
+    relates_to: [ai, nlp]
+  - id: nlp_chatbot
+    name: NLP Chatbot
+    uses: [python, fastapi, nlp, huggingface]
+    relates_to: [ai]
+  - id: web_dashboard
+    name: Analytics Dashboard
+    uses: [react, javascript, fastapi]
+    relates_to: [python]
