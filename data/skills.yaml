@@ -29,17 +29,42 @@ skills:
   - id: chromadb
     name: ChromaDB
     category: Database
+  - id: scikit-learn
+    name: scikit-learn
+    category: Machine Learning
+  - id: xgboost
+    name: XGBoost
+    category: Machine Learning
+  - id: tensorflow
+    name: TensorFlow/Keras
+    category: Deep Learning
+  - id: docker
+    name: Docker
+    category: DevOps
+  - id: streamlit
+    name: Streamlit
+    category: Frontend Framework
+  - id: vertex-ai
+    name: Google Vertex AI
+    category: AI Tools
+  - id: nltk
+    name: NLTK
+    category: NLP Tools
 
 projects:
-  - id: ai_portfolio
+  - id: portfolio-site
     name: AI-Powered Portfolio Website
     uses: [nextjs, fastapi, rag, chromadb, huggingface]
     relates_to: [ai, nlp]
-  - id: nlp_chatbot
-    name: NLP Chatbot
-    uses: [python, fastapi, nlp, huggingface]
+  - id: financial-news-analysis
+    name: Financial News Analysis & Stock Prediction
+    uses: [python, nltk, tensorflow, scikit-learn]
+    relates_to: [ai, nlp]
+  - id: network-intrusion-detection
+    name: Network Intrusion Detection Benchmarking
+    uses: [python, scikit-learn, xgboost]
     relates_to: [ai]
-  - id: web_dashboard
-    name: Analytics Dashboard
-    uses: [react, javascript, fastapi]
-    relates_to: [python]
+  - id: law-autocomplete-service
+    name: Law Autocomplete Service
+    uses: [python, fastapi, streamlit, vertex-ai, docker]
+    relates_to: [ai, nlp]
