@@ -4,22 +4,25 @@ import { motion } from "framer-motion";
 
 const experiences = [
 	{
-		company: "Tech Innovators Inc",
-		role: "Senior Frontend Developer",
-		period: "2022 — Present",
-		description: "Leading frontend architecture and design system implementation",
+		company: "CareCloud",
+		role: "AI Engineer",
+		period: "Jul 2025 — Present",
+		description:
+			"Led automation of healthcare RCM softwares, improving operational efficiency and reducing manual intervention. Designed and deployed AI-based solutions for various healthcare applications. Contributed to system architecture ensuring scalability using asynchronous programming, multiprocessing, and multithreading techniques.",
 	},
 	{
-		company: "Digital Solutions Co",
-		role: "Full Stack Developer",
-		period: "2020 — 2022",
-		description: "Built scalable web applications with modern frameworks",
+		company: "Automotive Artificial Intelligence (AAI)",
+		role: "AI Developer",
+		period: "Feb 2025 — Jun 2025",
+		description:
+			"Developed and deployed an intelligent text autocompletion system using Large Language Models (LLMs) and FastAPI. Designed and implemented backend services including user profile management, authentication, and session handling.",
 	},
 	{
-		company: "StartUp Ventures",
-		role: "Frontend Developer",
-		period: "2018 — 2020",
-		description: "Created responsive interfaces for mobile-first applications",
+		company: "CARE Pvt. Ltd. – Center for Advanced Research in Engineering",
+		role: "Software Intern",
+		period: "Aug 2024 — Oct 2025",
+		description:
+			"Designed website workflows enhancing user experience of Seller and Customer Portals. Designed an ERD with over 30 entities to structure the database. Worked on AI modules including GANs, ResNet, MLP, and Random Forest.",
 	},
 ];
 
