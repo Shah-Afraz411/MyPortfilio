@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Send, FileText } from "lucide-react";
-import { useState } from "react";
+import { Send, FileText, Sparkles } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -12,24 +12,38 @@ type Message = {
   sources?: string[];
 };
 
+const suggestedQuestions = [
+  "What are Afraz's top skills?",
+  "Tell me about his AI projects",
+  "What's his work experience?",
+  "What technologies does he use?",
+];
+
 export function ChatbotCard() {
   const [messages, setMessages] = useState<Message[]>(
     [
       {
         role: "assistant",
         content:
-          "Hi! I'm an AI assistant trained on the portfolio data. Ask me anything about the experience, projects, or skills!",
+          "Hi! I'm an AI assistant trained on Afraz's portfolio. Ask me anything about his experience, projects, or skills!",
       },
     ]
   );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-    const userMessage = input.trim();
+  const handleSend = async (text?: string) => {
+    const userMessage = (text || input).trim();
+    if (!userMessage) return;
+
     setInput("");
+    setShowSuggestions(false);
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
 
@@ -75,18 +89,18 @@ export function ChatbotCard() {
       className="space-y-6"
     >
       <div>
-        <h1 className="text-5xl md:text-6xl font-medium mb-4 tracking-tight">
+        <h1 className="text-5xl md:text-6xl font-medium mb-2 tracking-tight">
           AI Assistant
         </h1>
-        <p className="text-xl text-muted-foreground">
-          Powered by RAG technology, trained on portfolio knowledge
+        <p className="text-lg text-muted-foreground">
+          Powered by RAG — ask anything about Afraz's work
         </p>
       </div>
 
       {/* Chat Container */}
-      <div className="border border-border rounded-2xl bg-card/60 backdrop-blur-xl overflow-hidden">
+      <div className="border border-border rounded-xl bg-card/60 backdrop-blur-xl overflow-hidden">
         {/* Messages */}
-        <div className="h-[500px] overflow-y-auto p-6 space-y-4">
+        <div className="h-[460px] overflow-y-auto p-6 space-y-4">
           {messages.map((msg, idx) => (
             <motion.div
               key={idx}
@@ -97,13 +111,19 @@ export function ChatbotCard() {
                 msg.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              <div
-                className={`max-w-[80%] rounded-2xl backdrop-blur-sm ${
-                  msg.role === "user"
-                    ? "bg-foreground/90 text-background"
-                    : "bg-secondary/80 text-foreground"
-                }`}
-              >
+              <div className="flex items-start gap-2.5 max-w-[80%]">
+                {msg.role === "assistant" && (
+                  <div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Sparkles className="w-3.5 h-3.5 text-foreground/60" />
+                  </div>
+                )}
+                <div
+                  className={`rounded-2xl ${
+                    msg.role === "user"
+                      ? "bg-foreground/90 text-background"
+                      : "bg-secondary/80 text-foreground"
+                  }`}
+                >
                 {/* Message Content */}
                 <div className="p-4">
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -134,6 +154,7 @@ export function ChatbotCard() {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
             </motion.div>
           ))}
@@ -153,6 +174,27 @@ export function ChatbotCard() {
               </div>
             </motion.div>
           )}
+
+          {/* Suggested Questions */}
+          {showSuggestions && messages.length <= 1 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex flex-wrap gap-2 pt-2"
+            >
+              {suggestedQuestions.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleSend(q)}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border bg-foreground/5 text-muted-foreground hover:border-foreground/30 hover:text-foreground transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </motion.div>
+          )}
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
@@ -162,12 +204,12 @@ export function ChatbotCard() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === "Enter" && !isLoading && handleSend()}
-              placeholder="Ask me anything..."
+              placeholder="Ask about skills, projects, experience..."
               className="flex-1 border-border"
               disabled={isLoading}
             />
             <Button
-              onClick={handleSend}
+              onClick={() => void handleSend()}
               disabled={isLoading || !input.trim()}
               size="icon"
               className="bg-foreground text-background hover:bg-foreground/90"

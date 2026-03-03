@@ -117,6 +117,15 @@ export function ProjectsCard() {
 
 	return (
 		<div>
+			<div className="mb-8">
+				<h1 className="text-5xl md:text-6xl font-medium mb-2 tracking-tight">
+					Projects
+				</h1>
+				<p className="text-lg text-muted-foreground">
+					AI/ML projects spanning NLP, cybersecurity, and intelligent systems
+				</p>
+			</div>
+
 			<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 				{projects.map((project, index) => (
 					<motion.div
@@ -125,9 +134,19 @@ export function ProjectsCard() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.1 }}
 						onClick={() => handleProjectClick(project)}
-						className="group cursor-pointer border-2 border-border rounded-2xl overflow-hidden hover:border-foreground/40 transition-all shadow-lg hover:shadow-xl bg-card"
+						className="group cursor-pointer border border-border rounded-xl overflow-hidden hover:border-foreground/30 transition-all bg-card/50 hover:bg-card relative"
+						whileHover={{ y: -4 }}
 					>
 						<div className="aspect-video bg-muted relative overflow-hidden">
+							{/* Project number badge */}
+							<div className="absolute top-3 left-3 z-10 w-8 h-8 rounded-lg bg-background/80 backdrop-blur border border-border flex items-center justify-center">
+								<span className="text-xs font-mono font-bold">0{index + 1}</span>
+							</div>
+							{index === 0 && (
+								<div className="absolute top-3 right-3 z-10 px-2 py-0.5 rounded-md bg-foreground text-background text-[10px] font-semibold uppercase tracking-wider">
+									Featured
+								</div>
+							)}
 							{project.image ? (
 								<img
 									src={project.image}
@@ -138,22 +157,27 @@ export function ProjectsCard() {
 								<div className="absolute inset-0 bg-gradient-to-br from-accent/20 to-transparent" />
 							)}
 						</div>
-						<div className="p-6 bg-card">
-							<h3 className="text-xl font-semibold mb-2 group-hover:text-foreground transition-colors">
+						<div className="p-5 bg-card">
+							<h3 className="text-lg font-semibold mb-1.5 group-hover:text-foreground transition-colors">
 								{project.title}
 							</h3>
-							<p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+							<p className="text-muted-foreground text-sm mb-3 line-clamp-2">
 								{project.description}
 							</p>
-							<div className="flex flex-wrap gap-2">
+							<div className="flex flex-wrap gap-1.5">
 								{project.technologies?.slice(0, 3).map((tech, i) => (
 									<span
 										key={i}
-										className="text-xs px-3 py-1.5 bg-foreground/10 hover:bg-foreground/20 border border-foreground/20 rounded-full font-medium transition-colors"
+										className="text-xs px-2.5 py-1 bg-foreground/5 border border-border rounded-full font-medium group-hover:border-foreground/20 transition-colors"
 									>
 										{tech}
 									</span>
 								))}
+								{project.technologies.length > 3 && (
+									<span className="text-xs px-2.5 py-1 text-muted-foreground/50">
+										+{project.technologies.length - 3}
+									</span>
+								)}
 							</div>
 						</div>
 					</motion.div>
@@ -177,13 +201,12 @@ export function ProjectsCard() {
 							onClick={(e) => e.stopPropagation()}
 							className="bg-card border border-border rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
 						>
-							{/* Header */}
-							<div className="sticky top-0 bg-card border-b border-border p-6 flex items-start justify-between">
+							<div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border p-6 flex items-start justify-between">
 								<div className="flex-1">
-									<h2 className="text-3xl font-medium mb-2">
+									<h2 className="text-2xl md:text-3xl font-medium mb-2">
 										{selectedProject.title}
 									</h2>
-									<p className="text-muted-foreground">
+									<p className="text-muted-foreground text-sm">
 										{selectedProject.description}
 									</p>
 								</div>

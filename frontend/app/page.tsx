@@ -8,7 +8,7 @@ import { ProjectsCard } from "@/components/cards/projects-card";
 import { SkillsCard } from "@/components/cards/skills-card";
 import { ExperienceCard } from "@/components/cards/experience-card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Download, Github, Linkedin } from "lucide-react";
+import { Download, Github, Linkedin, MessageSquare, FolderGit2, Zap, Briefcase } from "lucide-react";
 import { SiPython, SiMongodb, SiFastapi, SiTensorflow, SiPytorch } from "react-icons/si";
 import { TbBrain, TbSql, TbSparkles, TbRobot } from "react-icons/tb";
 
@@ -22,25 +22,37 @@ const cards = [
 	{ id: "experience", label: "Experience" },
 ];
 
+const sectionLabels = ["Home", "AI Chat", "Projects", "Skills", "Experience"];
+
 function ProgressIndicator({
 	progress,
 }: {
 	progress: number;
 }) {
+	const activeIndex = Math.min(Math.floor(progress * sectionLabels.length), sectionLabels.length - 1);
 	return (
-		<div className="relative w-48">
-			<div className="w-full h-1 bg-border rounded-full overflow-hidden">
-				<div
-					className="h-full bg-foreground transition-none origin-left"
-					style={{ transform: `scaleX(${progress})` }}
-				/>
-			</div>
-			<div
-				className="absolute -top-1 left-0 w-3 h-3 bg-foreground rounded-full"
-				style={{
-					transform: `translateX(${progress * 192 - 6}px)`,
-				}}
-			/>
+		<div className="flex items-center gap-3">
+			{sectionLabels.map((label, i) => {
+				const isActive = i === activeIndex;
+				const isPast = i < activeIndex;
+				return (
+					<div key={label} className="flex items-center gap-3">
+						<div className="flex items-center gap-1.5">
+							<div className={`w-2 h-2 rounded-full transition-all duration-300 ${
+								isActive ? 'bg-foreground scale-125' : isPast ? 'bg-foreground/50' : 'bg-border'
+							}`} />
+							<span className={`text-xs font-medium transition-all duration-300 hidden sm:inline ${
+								isActive ? 'text-foreground' : 'text-muted-foreground/60'
+							}`}>{label}</span>
+						</div>
+						{i < sectionLabels.length - 1 && (
+							<div className={`w-6 h-px transition-colors duration-300 ${
+								isPast ? 'bg-foreground/40' : 'bg-border'
+							}`} />
+						)}
+					</div>
+				);
+			})}
 		</div>
 	);
 }
@@ -449,15 +461,40 @@ export default function Home() {
 							>
 								<div className="flex flex-col h-full justify-between">
 									<div>
+										<div className="flex items-center gap-4 mb-6">
+											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+												<MessageSquare className="w-6 h-6 text-foreground/70" />
+											</div>
+											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">02 / 05</span>
+										</div>
 										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
 											AI Assistant
 										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl">
+										<p className="text-xl text-muted-foreground max-w-xl mb-10">
 											Chat with my AI assistant powered by RAG technology. Ask anything about my work.
 										</p>
+										{/* Chat Preview */}
+										<div className="space-y-3 max-w-md">
+											<div className="flex items-start gap-3">
+												<div className="w-7 h-7 rounded-full bg-foreground/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+													<span className="text-xs">You</span>
+												</div>
+												<div className="px-4 py-2.5 rounded-2xl bg-foreground/5 border border-border text-sm text-muted-foreground">
+													What projects has Afraz worked on?
+												</div>
+											</div>
+											<div className="flex items-start gap-3">
+												<div className="w-7 h-7 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+													<TbSparkles className="w-3.5 h-3.5" />
+												</div>
+												<div className="px-4 py-2.5 rounded-2xl bg-foreground/5 border border-border text-sm text-muted-foreground">
+													Afraz has built several AI/ML projects including...
+												</div>
+											</div>
+										</div>
 									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground">
-										<span>Click to open</span>
+									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+										<span>Start chatting</span>
 										<motion.span 
 											className="inline-block"
 											animate={{ x: [0, 8, 0] }}
@@ -480,15 +517,30 @@ export default function Home() {
 							>
 								<div className="flex flex-col h-full justify-between">
 									<div>
+										<div className="flex items-center gap-4 mb-6">
+											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+												<FolderGit2 className="w-6 h-6 text-foreground/70" />
+											</div>
+											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">03 / 05</span>
+										</div>
 										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
 											Projects
 										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl">
-											Explore my latest work and side projects.
+										<p className="text-xl text-muted-foreground max-w-xl mb-10">
+											AI/ML projects spanning NLP, computer vision, and intelligent systems.
 										</p>
+										{/* Project Preview Tiles */}
+										<div className="grid grid-cols-2 gap-3 max-w-lg">
+											{["Financial News Analysis", "Intrusion Detection", "Law Autocomplete", "AI Portfolio"].map((name, i) => (
+												<div key={name} className="px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+													<span className="text-xs text-muted-foreground/40 font-mono">0{i + 1}</span>
+													<p className="text-sm font-medium mt-0.5">{name}</p>
+												</div>
+											))}
+										</div>
 									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground">
-										<span>Click to open</span>
+									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+										<span>View all projects</span>
 										<motion.span 
 											className="inline-block"
 											animate={{ x: [0, 8, 0] }}
@@ -511,15 +563,30 @@ export default function Home() {
 							>
 								<div className="flex flex-col h-full justify-between">
 									<div>
+										<div className="flex items-center gap-4 mb-6">
+											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+												<Zap className="w-6 h-6 text-foreground/70" />
+											</div>
+											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">04 / 05</span>
+										</div>
 										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
 											Skills
 										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl">
+										<p className="text-xl text-muted-foreground max-w-xl mb-10">
 											Technologies and tools I work with daily.
 										</p>
+										{/* Skills Preview Cloud */}
+										<div className="flex flex-wrap gap-2 max-w-lg">
+											{["Python", "TensorFlow", "PyTorch", "FastAPI", "LangChain", "Docker", "SQL", "XGBoost", "Pandas", "GCP", "Kubernetes", "GANs"].map((skill) => (
+												<span key={skill} className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-border text-muted-foreground group-hover:border-foreground/20 transition-colors">
+													{skill}
+												</span>
+											))}
+											<span className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-dashed border-foreground/20 text-muted-foreground/60">+more</span>
+										</div>
 									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground">
-										<span>Click to open</span>
+									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+										<span>View all skills</span>
 										<motion.span 
 											className="inline-block"
 											animate={{ x: [0, 8, 0] }}
@@ -542,15 +609,40 @@ export default function Home() {
 							>
 								<div className="flex flex-col h-full justify-between">
 									<div>
+										<div className="flex items-center gap-4 mb-6">
+											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+												<Briefcase className="w-6 h-6 text-foreground/70" />
+											</div>
+											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">05 / 05</span>
+										</div>
 										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
 											Experience
 										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl">
-											My professional journey and achievements.
+										<p className="text-xl text-muted-foreground max-w-xl mb-10">
+											My professional journey in AI and software engineering.
 										</p>
+										{/* Experience Preview Timeline */}
+										<div className="space-y-4 max-w-lg">
+											{[
+												{ role: "AI Engineer", company: "CareCloud", period: "2025 — Present" },
+												{ role: "AI Developer", company: "AAI", period: "2025" },
+												{ role: "Software Intern", company: "CARE Pvt. Ltd.", period: "2024 — 2025" },
+											].map((exp, i) => (
+												<div key={i} className="flex items-center gap-4">
+													<div className="flex flex-col items-center">
+														<div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-foreground' : 'bg-foreground/30'}`} />
+														{i < 2 && <div className="w-px h-6 bg-border mt-1" />}
+													</div>
+													<div className="flex-1">
+														<p className="text-base font-medium">{exp.role}</p>
+														<p className="text-sm text-muted-foreground">{exp.company} · {exp.period}</p>
+													</div>
+												</div>
+											))}
+										</div>
 									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground">
-										<span>Click to open</span>
+									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+										<span>View full timeline</span>
 										<motion.span 
 											className="inline-block"
 											animate={{ x: [0, 8, 0] }}
