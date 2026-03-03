@@ -64,6 +64,8 @@ export default function Home() {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const lenisRef = useRef<Lenis | null>(null);
 	const rafRef = useRef<number | null>(null);
+	const savedScrollRef = useRef<number>(0);
+	const savedProgressRef = useRef<number>(0);
 
 	// Optimized cursor with reduced spring
 	const cursorX = useMotionValue(0);
@@ -74,6 +76,16 @@ export default function Home() {
 	useEffect(() => {
 		setMounted(true);
 	}, []);
+
+	// Restore scroll position after returning from a card detail view
+	useEffect(() => {
+		if (!mounted || activeCard) return;
+		const container = containerRef.current;
+		if (container && savedScrollRef.current > 0) {
+			container.scrollLeft = savedScrollRef.current;
+			setScrollProgress(savedProgressRef.current);
+		}
+	}, [mounted, activeCard]);
 
 	// Lenis smooth scroll - SIMPLIFIED
 	useEffect(() => {
@@ -171,13 +183,8 @@ export default function Home() {
 		return () => window.removeEventListener("mousemove", moveCursor);
 	}, [mounted, cursorX, cursorY]);
 
-	// Enhanced back click with zoom reset
+	// Enhanced back click with scroll restoration
 	const handleBackClick = useCallback(() => {
-		const container = containerRef.current;
-		if (container) {
-			container.scrollLeft = 0;
-			setScrollProgress(0);
-		}
 		setActiveCard(null);
 	}, []);
 
@@ -454,7 +461,7 @@ export default function Home() {
 						{/* Chatbot Card */}
 						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => setActiveCard("chatbot")}
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("chatbot"); }}
 								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -510,7 +517,7 @@ export default function Home() {
 						{/* Projects Card */}
 						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => setActiveCard("projects")}
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("projects"); }}
 								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -556,7 +563,7 @@ export default function Home() {
 						{/* Skills Card */}
 						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => setActiveCard("skills")}
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("skills"); }}
 								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -602,7 +609,7 @@ export default function Home() {
 						{/* Experience Card */}
 						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4 pr-8 md:pr-16">
 							<motion.div
-								onClick={() => setActiveCard("experience")}
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("experience"); }}
 								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
