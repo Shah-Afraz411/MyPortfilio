@@ -288,9 +288,9 @@ export default function Home() {
 						}}
 					>
 						{/* Hero Card */}
-						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center pl-8 md:pl-16 pr-4">
+						<section className="flex-shrink-0 w-[71vw] h-screen flex items-center pl-20 md:pl-32 pr-4">
 							<motion.div 
-								className="w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 flex flex-col justify-end pb-16 shadow-2xl rounded-xl"
+								className="w-full h-[80vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 flex flex-col justify-end pb-16 shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
@@ -300,7 +300,7 @@ export default function Home() {
 									transition={{ delay: 0.3, duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
 								>
 								{/* Top row: Name + Profile Image */}
-								<div className="flex items-start justify-between gap-8 mb-2">
+								<div className="flex items-start justify-between gap-8 mb-2 mt-10">
 									<div>
 										<h1 className="text-6xl md:text-7xl lg:text-8xl font-medium leading-tight tracking-tight mb-6">
 											Syed Afraz
@@ -346,7 +346,7 @@ export default function Home() {
 										<img
 											src="/profile.jpeg"
 											alt="Syed Afraz"
-											className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-cover rounded-xl border-2 border-border shadow-lg"
+											className="w-48 h-48 md:w-56 md:h-56 lg:w-64 lg:h-64 object-cover rounded-full border-2 border-border shadow-lg"
 										/>
 									</motion.div>
 								</div>
@@ -459,10 +459,10 @@ export default function Home() {
 						</section>
 
 						{/* Chatbot Card */}
-						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
+						<section className="flex-shrink-0 w-[68vw] h-screen flex items-center px-4">
 							<motion.div
 								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("chatbot"); }}
-								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								className="cursor-pointer group w-full h-[78vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
@@ -515,10 +515,10 @@ export default function Home() {
 						</section>
 
 						{/* Projects Card */}
-						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
+						<section className="flex-shrink-0 w-[67vw] h-screen flex items-center px-4">
 							<motion.div
 								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("projects"); }}
-								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								className="cursor-pointer group w-full h-[76vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
@@ -561,10 +561,10 @@ export default function Home() {
 						</section>
 
 						{/* Skills Card */}
-						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4">
+						<section className="flex-shrink-0 w-[66vw] h-screen flex items-center px-4">
 							<motion.div
 								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("skills"); }}
-								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
@@ -607,10 +607,10 @@ export default function Home() {
 						</section>
 
 						{/* Experience Card */}
-						<section className="flex-shrink-0 w-[70vw] h-screen flex items-center px-4 pr-8 md:pr-16">
+						<section className="flex-shrink-0 w-[66vw] h-screen flex items-center px-4 pr-8 md:pr-16">
 							<motion.div
 								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("experience"); }}
-								className="cursor-pointer group w-full h-[85vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
