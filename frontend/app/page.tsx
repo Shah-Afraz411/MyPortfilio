@@ -250,7 +250,7 @@ export default function Home() {
 	const zoomLevel = 1 - (scrollProgress * 0.28); // Smooth interpolation from 1 to 0.72
 
 	return (
-		<div className="relative min-h-screen overflow-hidden">
+		<div className="relative z-10 min-h-screen overflow-hidden">
 			{/* Progress bar with stronger backdrop blur */}
 			{!activeCard && (
 				<div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/90 dark:bg-card/90 backdrop-blur-xl shadow-lg">
