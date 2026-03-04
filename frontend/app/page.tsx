@@ -1,18 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { motion, useMotionValue, useSpring, AnimatePresence } from "framer-motion";
 import Lenis from "@studio-freight/lenis";
 import { ChatbotCard } from "@/components/cards/chatbot-card";
 import { ProjectsCard } from "@/components/cards/projects-card";
 import { SkillsCard } from "@/components/cards/skills-card";
 import { ExperienceCard } from "@/components/cards/experience-card";
+import { CertificationsCard } from "@/components/cards/certifications-card";
+import { PublicationsCard } from "@/components/cards/publications-card";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Download, Github, Linkedin, MessageSquare, FolderGit2, Zap, Briefcase } from "lucide-react";
+import { Download, Github, Linkedin, MessageSquare, FolderGit2, Zap, Briefcase, Award, BookOpen } from "lucide-react";
 import { SiPython, SiMongodb, SiFastapi, SiTensorflow, SiPytorch } from "react-icons/si";
 import { TbBrain, TbSql, TbSparkles, TbRobot } from "react-icons/tb";
 
-type CardType = "chatbot" | "projects" | "skills" | "experience" | null;
+type CardType = "chatbot" | "projects" | "skills" | "experience" | "certifications" | "publications" | null;
 
 const cards = [
 	{ id: "hero", label: "Home" },
@@ -22,21 +24,21 @@ const cards = [
 	{ id: "experience", label: "Experience" },
 ];
 
-const sectionLabels = ["Home", "AI Chat", "Projects", "Skills", "Experience"];
-
 function ProgressIndicator({
 	progress,
+	labels,
 }: {
 	progress: number;
+	labels: string[];
 }) {
-	const activeIndex = Math.min(Math.floor(progress * sectionLabels.length), sectionLabels.length - 1);
+	const activeIndex = Math.min(Math.floor(progress * labels.length), labels.length - 1);
 	return (
 		<div className="flex items-center gap-3">
-			{sectionLabels.map((label, i) => {
+			{labels.map((label, i) => {
 				const isActive = i === activeIndex;
 				const isPast = i < activeIndex;
 				return (
-					<div key={label} className="flex items-center gap-3">
+					<div key={i} className="flex items-center gap-3">
 						<div className="flex items-center gap-1.5">
 							<div className={`w-2 h-2 rounded-full transition-all duration-300 ${
 								isActive ? 'bg-foreground scale-125' : isPast ? 'bg-foreground/50' : 'bg-border'
@@ -45,7 +47,7 @@ function ProgressIndicator({
 								isActive ? 'text-foreground' : 'text-muted-foreground/60'
 							}`}>{label}</span>
 						</div>
-						{i < sectionLabels.length - 1 && (
+						{i < labels.length - 1 && (
 							<div className={`w-6 h-px transition-colors duration-300 ${
 								isPast ? 'bg-foreground/40' : 'bg-border'
 							}`} />
@@ -61,6 +63,7 @@ export default function Home() {
 	const [activeCard, setActiveCard] = useState<CardType>(null);
 	const [mounted, setMounted] = useState(false);
 	const [scrollProgress, setScrollProgress] = useState(0);
+	const [swipePhase, setSwipePhase] = useState(0);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const lenisRef = useRef<Lenis | null>(null);
 	const rafRef = useRef<number | null>(null);
@@ -164,6 +167,114 @@ export default function Home() {
 		};
 	}, [mounted, activeCard]);
 
+	// Edge scroll/swipe detection for phase transitions
+	// KEY RULE: When swipePhase > 0, ALL backward scroll is BLOCKED until phases revert to 0.
+	// Forward advance uses dwell + gesture threshold so it doesn't trigger during normal scrolling.
+	useEffect(() => {
+		if (!mounted || activeCard) return;
+		const container = containerRef.current;
+		if (!container) return;
+
+		let locked = false;
+		let edgeDwellTimer: ReturnType<typeof setTimeout> | null = null;
+		let atEdge = false;
+		let gestureDelta = 0;
+		let backDelta = 0;
+		let touchStartX = 0;
+
+		const DWELL_MS = 300;
+		const GESTURE_THRESHOLD = 250;
+		const BACK_THRESHOLD = 120;       // lower threshold for going back (feels more responsive)
+		const LOCK_MS = 800;
+
+		const isAtRightEdge = () => {
+			const maxScroll = container.scrollWidth - container.clientWidth;
+			return container.scrollLeft >= maxScroll - 10;
+		};
+
+		const triggerPhase = (direction: 1 | -1) => {
+			locked = true;
+			atEdge = false;
+			gestureDelta = 0;
+			backDelta = 0;
+			if (edgeDwellTimer) { clearTimeout(edgeDwellTimer); edgeDwellTimer = null; }
+			setSwipePhase(prev => Math.max(0, Math.min(2, prev + direction)));
+			setTimeout(() => { locked = false; atEdge = false; gestureDelta = 0; backDelta = 0; }, LOCK_MS);
+		};
+
+		const handleWheel = (e: WheelEvent) => {
+			const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+
+			// CRITICAL: When swipePhase > 0 and user scrolls backward, BLOCK the scroll
+			// and consume it to revert phases. This prevents the page from scrolling left
+			// before all phases are unwound back to 0.
+			if (swipePhase > 0 && delta < 0) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (locked) return;
+				backDelta += Math.abs(delta);
+				if (backDelta >= BACK_THRESHOLD) {
+					triggerPhase(-1);
+				}
+				return;
+			}
+
+			// Normal forward phase advance logic (only at the right edge with dwell)
+			if (locked) return;
+
+			if (!isAtRightEdge()) {
+				atEdge = false;
+				gestureDelta = 0;
+				if (edgeDwellTimer) { clearTimeout(edgeDwellTimer); edgeDwellTimer = null; }
+				return;
+			}
+
+			// At the right edge
+			if (!atEdge && !edgeDwellTimer) {
+				edgeDwellTimer = setTimeout(() => {
+					atEdge = true;
+					gestureDelta = 0;
+				}, DWELL_MS);
+				return;
+			}
+
+			if (!atEdge) return;
+
+			gestureDelta += delta;
+
+			if (gestureDelta >= GESTURE_THRESHOLD && swipePhase < 2) {
+				triggerPhase(1);
+			}
+		};
+
+		const handleTouchStart = (e: TouchEvent) => { touchStartX = e.touches[0].clientX; };
+		const handleTouchEnd = (e: TouchEvent) => {
+			if (locked) return;
+			const deltaX = touchStartX - e.changedTouches[0].clientX;
+
+			// Forward: only at right edge
+			if (deltaX > 100 && isAtRightEdge() && swipePhase < 2) {
+				triggerPhase(1);
+			}
+			// Backward: always intercept while phase > 0
+			else if (deltaX < -80 && swipePhase > 0) {
+				triggerPhase(-1);
+			}
+		};
+
+		// MUST be non-passive so we can preventDefault() on backward scroll when phase > 0
+		container.addEventListener('wheel', handleWheel, { passive: false });
+		container.addEventListener('touchstart', handleTouchStart, { passive: true });
+		container.addEventListener('touchend', handleTouchEnd, { passive: true });
+
+		return () => {
+			container.removeEventListener('wheel', handleWheel);
+			container.removeEventListener('touchstart', handleTouchStart);
+			container.removeEventListener('touchend', handleTouchEnd);
+			if (edgeDwellTimer) clearTimeout(edgeDwellTimer);
+		};
+	}, [mounted, activeCard, swipePhase]);
+
 	// Throttled cursor movement
 	useEffect(() => {
 		if (!mounted) return;
@@ -242,6 +353,13 @@ export default function Home() {
 		}
 	};
 
+	// Dynamic section labels based on swipe phase
+	const currentSectionLabels = swipePhase === 1 
+		? ["Home", "AI Chat", "Projects", "Skills", "Certs"] 
+		: swipePhase === 2 
+			? ["Home", "AI Chat", "Projects", "Certs", "Pubs"]
+			: ["Home", "AI Chat", "Projects", "Skills", "Experience"];
+
 	if (!mounted) {
 		return null;
 	}
@@ -254,7 +372,7 @@ export default function Home() {
 			{/* Progress bar with stronger backdrop blur */}
 			{!activeCard && (
 				<div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/90 dark:bg-card/90 backdrop-blur-xl shadow-lg">
-					<ProgressIndicator progress={scrollProgress} />
+					<ProgressIndicator progress={scrollProgress} labels={currentSectionLabels} />
 				</div>
 			)}
 
@@ -560,105 +678,203 @@ export default function Home() {
 							</motion.div>
 						</section>
 
-						{/* Skills Card */}
+						{/* Dynamic Card - Position 4 (Skills / Certifications) */}
 						<section className="flex-shrink-0 w-[66vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("skills"); }}
-								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase < 2 ? "skills" : "certifications"); }}
+								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-hidden"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
-								<div className="flex flex-col h-full justify-between">
-									<div>
-										<div className="flex items-center gap-4 mb-6">
-											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
-												<Zap className="w-6 h-6 text-foreground/70" />
+								<AnimatePresence mode="wait">
+									{swipePhase < 2 ? (
+										<motion.div key="skills-slot4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex flex-col h-full justify-between">
+											<div>
+												<div className="flex items-center gap-4 mb-6">
+													<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+														<Zap className="w-6 h-6 text-foreground/70" />
+													</div>
+													<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">04 / 05</span>
+												</div>
+												<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
+													Skills
+												</h2>
+												<p className="text-xl text-muted-foreground max-w-xl mb-10">
+													Technologies and tools I work with daily.
+												</p>
+												<div className="flex flex-wrap gap-2 max-w-lg">
+													{["Python", "TensorFlow", "PyTorch", "FastAPI", "LangChain", "Docker", "SQL", "XGBoost", "Pandas", "GCP", "Kubernetes", "GANs"].map((skill) => (
+														<span key={skill} className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-border text-muted-foreground group-hover:border-foreground/20 transition-colors">
+															{skill}
+														</span>
+													))}
+													<span className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-dashed border-foreground/20 text-muted-foreground/60">+more</span>
+												</div>
 											</div>
-											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">04 / 05</span>
-										</div>
-										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
-											Skills
-										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl mb-10">
-											Technologies and tools I work with daily.
-										</p>
-										{/* Skills Preview Cloud */}
-										<div className="flex flex-wrap gap-2 max-w-lg">
-											{["Python", "TensorFlow", "PyTorch", "FastAPI", "LangChain", "Docker", "SQL", "XGBoost", "Pandas", "GCP", "Kubernetes", "GANs"].map((skill) => (
-												<span key={skill} className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-border text-muted-foreground group-hover:border-foreground/20 transition-colors">
-													{skill}
-												</span>
-											))}
-											<span className="px-3 py-1.5 text-sm rounded-full bg-foreground/5 border border-dashed border-foreground/20 text-muted-foreground/60">+more</span>
-										</div>
-									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
-										<span>View all skills</span>
-										<motion.span 
-											className="inline-block"
-											animate={{ x: [0, 8, 0] }}
-											transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-										>
-											→
-										</motion.span>
-									</div>
-								</div>
+											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+												<span>View all skills</span>
+												<motion.span className="inline-block" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
+											</div>
+										</motion.div>
+									) : (
+										<motion.div key="certs-slot4" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex flex-col h-full justify-between">
+											<div>
+												<div className="flex items-center gap-4 mb-6">
+													<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+														<Award className="w-6 h-6 text-foreground/70" />
+													</div>
+													<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">04 / 05</span>
+												</div>
+												<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
+													Certifications
+												</h2>
+												<p className="text-xl text-muted-foreground max-w-xl mb-10">
+													Professional certifications and credentials.
+												</p>
+												<div className="space-y-3 max-w-lg">
+													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+														<Award className="w-5 h-5 text-foreground/30" />
+														<div>
+															<p className="text-sm font-medium">Data coming soon</p>
+															<p className="text-xs text-muted-foreground/60">Certifications will be listed here</p>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+												<span>View certifications</span>
+												<motion.span className="inline-block" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
 							</motion.div>
 						</section>
 
-						{/* Experience Card */}
+						{/* Dynamic Card - Position 5 (Experience / Certifications / Publications) */}
 						<section className="flex-shrink-0 w-[66vw] h-screen flex items-center px-4 pr-8 md:pr-16">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("experience"); }}
-								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl"
+								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase === 0 ? "experience" : swipePhase === 1 ? "certifications" : "publications"); }}
+								className="cursor-pointer group w-full h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-12 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-hidden relative"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
 							>
-								<div className="flex flex-col h-full justify-between">
-									<div>
-										<div className="flex items-center gap-4 mb-6">
-											<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
-												<Briefcase className="w-6 h-6 text-foreground/70" />
-											</div>
-											<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">05 / 05</span>
-										</div>
-										<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">
-											Experience
-										</h2>
-										<p className="text-xl text-muted-foreground max-w-xl mb-10">
-											My professional journey in AI and software engineering.
-										</p>
-										{/* Experience Preview Timeline */}
-										<div className="space-y-4 max-w-lg">
-											{[
-												{ role: "AI Engineer", company: "CareCloud", period: "2025 — Present" },
-												{ role: "AI Developer", company: "AAI", period: "2025" },
-												{ role: "Software Intern", company: "CARE Pvt. Ltd.", period: "2024 — 2025" },
-											].map((exp, i) => (
-												<div key={i} className="flex items-center gap-4">
-													<div className="flex flex-col items-center">
-														<div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-foreground' : 'bg-foreground/30'}`} />
-														{i < 2 && <div className="w-px h-6 bg-border mt-1" />}
+								<AnimatePresence mode="wait">
+									{swipePhase === 0 ? (
+										<motion.div key="exp-slot5" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex flex-col h-full justify-between">
+											<div>
+												<div className="flex items-center gap-4 mb-6">
+													<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+														<Briefcase className="w-6 h-6 text-foreground/70" />
 													</div>
-													<div className="flex-1">
-														<p className="text-base font-medium">{exp.role}</p>
-														<p className="text-sm text-muted-foreground">{exp.company} · {exp.period}</p>
+													<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">05 / 05</span>
+												</div>
+												<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">Experience</h2>
+												<p className="text-xl text-muted-foreground max-w-xl mb-10">My professional journey in AI and software engineering.</p>
+												<div className="space-y-4 max-w-lg">
+													{[
+														{ role: "AI Engineer", company: "CareCloud", period: "2025 — Present" },
+														{ role: "AI Developer", company: "AAI", period: "2025" },
+														{ role: "Software Intern", company: "CARE Pvt. Ltd.", period: "2024 — 2025" },
+													].map((exp, i) => (
+														<div key={i} className="flex items-center gap-4">
+															<div className="flex flex-col items-center">
+																<div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-foreground' : 'bg-foreground/30'}`} />
+																{i < 2 && <div className="w-px h-6 bg-border mt-1" />}
+															</div>
+															<div className="flex-1">
+																<p className="text-base font-medium">{exp.role}</p>
+																<p className="text-sm text-muted-foreground">{exp.company} · {exp.period}</p>
+															</div>
+														</div>
+													))}
+												</div>
+											</div>
+											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+												<span>View full timeline</span>
+												<motion.span className="inline-block" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
+											</div>
+										</motion.div>
+									) : swipePhase === 1 ? (
+										<motion.div key="certs-slot5" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex flex-col h-full justify-between">
+											<div>
+												<div className="flex items-center gap-4 mb-6">
+													<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+														<Award className="w-6 h-6 text-foreground/70" />
+													</div>
+													<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">05 / 05</span>
+												</div>
+												<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">Certifications</h2>
+												<p className="text-xl text-muted-foreground max-w-xl mb-10">Professional certifications and credentials.</p>
+												<div className="space-y-3 max-w-lg">
+													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+														<Award className="w-5 h-5 text-foreground/30" />
+														<div>
+															<p className="text-sm font-medium">Data coming soon</p>
+															<p className="text-xs text-muted-foreground/60">Certifications will be listed here</p>
+														</div>
 													</div>
 												</div>
-											))}
-										</div>
-									</div>
-									<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
-										<span>View full timeline</span>
-										<motion.span 
-											className="inline-block"
-											animate={{ x: [0, 8, 0] }}
-											transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-										>
-											→
-										</motion.span>
-									</div>
+											</div>
+											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+												<span>View certifications</span>
+												<motion.span className="inline-block" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
+											</div>
+										</motion.div>
+									) : (
+										<motion.div key="pubs-slot5" initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex flex-col h-full justify-between">
+											<div>
+												<div className="flex items-center gap-4 mb-6">
+													<div className="w-12 h-12 rounded-2xl bg-foreground/5 border border-border flex items-center justify-center group-hover:bg-foreground/10 transition-colors">
+														<BookOpen className="w-6 h-6 text-foreground/70" />
+													</div>
+													<span className="text-xs font-medium uppercase tracking-widest text-muted-foreground/60">05 / 05</span>
+												</div>
+												<h2 className="text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">Publications</h2>
+												<p className="text-xl text-muted-foreground max-w-xl mb-10">Research papers and publications.</p>
+												<div className="space-y-3 max-w-lg">
+													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+														<BookOpen className="w-5 h-5 text-foreground/30" />
+														<div>
+															<p className="text-sm font-medium">Data coming soon</p>
+															<p className="text-xs text-muted-foreground/60">Publications will be listed here</p>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
+												<span>View publications</span>
+												<motion.span className="inline-block" animate={{ x: [0, 8, 0] }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}>→</motion.span>
+											</div>
+										</motion.div>
+									)}
+								</AnimatePresence>
+
+								{/* Phase navigation dots */}
+								<div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+									{[0, 1, 2].map((phase) => (
+										<button
+											key={phase}
+											onClick={(e) => { e.stopPropagation(); setSwipePhase(phase); }}
+											className={`rounded-full transition-all duration-300 ${
+												swipePhase === phase ? 'w-6 h-1.5 bg-foreground/50' : 'w-1.5 h-1.5 bg-foreground/15 hover:bg-foreground/30'
+											}`}
+											title={["Experience", "Certifications", "Publications"][phase]}
+										/>
+									))}
 								</div>
+
+								{/* Swipe hint */}
+								{swipePhase < 2 && (
+									<motion.div
+										className="absolute bottom-6 right-8 flex items-center gap-1 text-[11px] text-muted-foreground/30 pointer-events-none"
+										animate={{ x: [0, 4, 0] }}
+										transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+									>
+										<span>more</span>
+										<span>→</span>
+									</motion.div>
+								)}
 							</motion.div>
 						</section>
 					</div>
@@ -678,6 +894,8 @@ export default function Home() {
 						{activeCard === "projects" && <ProjectsCard />}
 						{activeCard === "skills" && <SkillsCard />}
 						{activeCard === "experience" && <ExperienceCard />}
+						{activeCard === "certifications" && <CertificationsCard />}
+						{activeCard === "publications" && <PublicationsCard />}
 					</div>
 				</div>
 			)}
