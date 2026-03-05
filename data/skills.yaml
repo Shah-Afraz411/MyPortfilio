@@ -1,0 +1,70 @@
+skills:
+  - id: python
+    name: Python
+    category: Programming Language
+  - id: javascript
+    name: JavaScript
+    category: Programming Language
+  - id: react
+    name: React
+    category: Frontend Framework
+  - id: nextjs
+    name: Next.js
+    category: Frontend Framework
+  - id: nlp
+    name: Natural Language Processing
+    category: Machine Learning
+  - id: ai
+    name: Artificial Intelligence
+    category: Machine Learning
+  - id: rag
+    name: Retrieval-Augmented Generation
+    category: AI Technique
+  - id: fastapi
+    name: FastAPI
+    category: Backend Framework
+  - id: huggingface
+    name: Hugging Face Transformers
+    category: AI Tools
+  - id: chromadb
+    name: ChromaDB
+    category: Database
+  - id: scikit-learn
+    name: scikit-learn
+    category: Machine Learning
+  - id: xgboost
+    name: XGBoost
+    category: Machine Learning
+  - id: tensorflow
+    name: TensorFlow/Keras
+    category: Deep Learning
+  - id: docker
+    name: Docker
+    category: DevOps
+  - id: streamlit
+    name: Streamlit
+    category: Frontend Framework
+  - id: vertex-ai
+    name: Google Vertex AI
+    category: AI Tools
+  - id: nltk
+    name: NLTK
+    category: NLP Tools
+
+projects:
+  - id: portfolio-site
+    name: AI-Powered Portfolio Website
+    uses: [nextjs, fastapi, rag, chromadb, huggingface]
+    relates_to: [ai, nlp]
+  - id: financial-news-analysis
+    name: Financial News Analysis & Stock Prediction
+    uses: [python, nltk, tensorflow, scikit-learn]
+    relates_to: [ai, nlp]
+  - id: network-intrusion-detection
+    name: Network Intrusion Detection Benchmarking
+    uses: [python, scikit-learn, xgboost]
+    relates_to: [ai]
+  - id: law-autocomplete-service
+    name: Law Autocomplete Service
+    uses: [python, fastapi, streamlit, vertex-ai, docker]
+    relates_to: [ai, nlp]
