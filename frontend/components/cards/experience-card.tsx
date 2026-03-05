@@ -29,7 +29,7 @@ const experiences = [
 	{
 		company: "CARE Pvt. Ltd. – Center for Advanced Research in Engineering",
 		role: "Software Intern",
-		period: "Aug 2024 — Oct 2025",
+		period: "Aug 2024 — Oct 2024",
 		isCurrent: false,
 		highlights: [
 			"Designed UX workflows for Seller & Customer Portals",

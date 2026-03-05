@@ -20,7 +20,7 @@ load_dotenv()
 
 # Using Google Gemini API (free tier)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = "gemini-1.5-flash"  # Free tier model
+GEMINI_MODEL = "gemini-2.5-flash"  # Free tier model
 
 # Configuration
 CHROMA_DB_DIR = Path(__file__).parent / "chroma_db"
@@ -337,7 +337,7 @@ async def call_gemini_api(prompt: str) -> str:
                 temperature=0.7,
                 top_p=0.9,
                 top_k=40,
-                max_output_tokens=300,
+                max_output_tokens=2048,
             )
         )
         
@@ -396,7 +396,7 @@ async def generate_answer(query: str, docs: List[Dict[str, Any]]) -> str:
     # Format context from retrieved documents
     context_parts = []
     for doc in docs:
-        content = doc['content'][:600]
+        content = doc['content'][:1500]
         context_parts.append(content)
     
     context = "\n\n".join(context_parts)
