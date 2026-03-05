@@ -48,7 +48,7 @@ export function ChatbotCard() {
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await fetch(`${apiUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

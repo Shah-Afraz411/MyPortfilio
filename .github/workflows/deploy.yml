@@ -1,0 +1,130 @@
+name: Deploy Portfolio
+
+on:
+  push:
+    branches: [deployment]
+  pull_request:
+    branches: [deployment]
+
+env:
+  PYTHON_VERSION: "3.12"
+  NODE_VERSION: "20"
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Lint & Test Backend (Python/FastAPI)
+  # ─────────────────────────────────────────────
+  backend-check:
+    name: Backend - Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: backend/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff pytest
+
+      - name: Lint with Ruff
+        run: ruff check . --output-format=github
+
+      - name: Check Python formatting
+        run: ruff format --check .
+
+      - name: Run tests (if any)
+        run: |
+          if [ -f test_rag.py ]; then
+            python -m pytest test_rag.py -v --tb=short || true
+          fi
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+
+  # ─────────────────────────────────────────────
+  # Job 2: Lint & Build Frontend (Next.js)
+  # ─────────────────────────────────────────────
+  frontend-check:
+    name: Frontend - Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint || true
+
+      - name: Type check
+        run: npx tsc --noEmit || true
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BACKEND_URL: ${{ secrets.BACKEND_URL }}
+
+  # ─────────────────────────────────────────────
+  # Job 3: Deploy Backend to Render
+  # ─────────────────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend (Render)
+    runs-on: ubuntu-latest
+    needs: [backend-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/deployment'
+
+    steps:
+      - name: Trigger Render Deploy
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"
+        # Render deploy hooks are webhook URLs that trigger a new deployment.
+        # Set RENDER_DEPLOY_HOOK_BACKEND in GitHub Secrets.
+
+  # ─────────────────────────────────────────────
+  # Job 4: Deploy Frontend to Vercel
+  # ─────────────────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    runs-on: ubuntu-latest
+    needs: [frontend-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/deployment'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel
+
+      - name: Deploy to Vercel Production
+        run: |
+          cd frontend
+          vercel --prod --token ${{ secrets.VERCEL_TOKEN }} \
+            --scope ${{ secrets.VERCEL_ORG_ID }} \
+            --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

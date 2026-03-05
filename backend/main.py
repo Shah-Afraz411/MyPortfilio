@@ -41,9 +41,14 @@ app = FastAPI(
 )
 
 # CORS configuration for frontend connection
+# Set ALLOWED_ORIGINS as a comma-separated list in .env
+# e.g. ALLOWED_ORIGINS=http://localhost:3000,https://your-portfolio.vercel.app
+allowed_origins = os.getenv("ALLOWED_ORIGINS", "").split(",")
+allowed_origins = [origin.strip() for origin in allowed_origins if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

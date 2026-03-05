@@ -305,7 +305,7 @@ export default function Home() {
 		e.stopPropagation();
 		
 		try {
-			const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+			const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 			console.log('Fetching CV from:', `${apiUrl}/api/download-cv`);
 			
 			const response = await fetch(`${apiUrl}/api/download-cv`, {
@@ -349,7 +349,7 @@ export default function Home() {
 		} catch (error) {
 			console.error('Error downloading CV:', error);
 			const message = error instanceof Error ? error.message : 'Failed to download CV';
-			alert(`${message}\n\nPlease make sure the backend server is running on http://localhost:8000`);
+			alert(`${message}\n\nPlease make sure the backend server is running.`);
 		}
 	};
 
