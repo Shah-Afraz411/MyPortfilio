@@ -93,7 +93,7 @@ export function ChatbotCard() {
           AI Assistant
         </h1>
         <p className="text-lg text-muted-foreground">
-          Powered by RAG — ask anything about Afraz's work
+          Powered by RAG — ask anything about Afraz&apos;s work
         </p>
       </div>
 

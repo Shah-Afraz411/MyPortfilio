@@ -328,7 +328,7 @@ async def call_gemini_api(prompt: str) -> str:
         return "Gemini API key not configured. Please add GEMINI_API_KEY to your .env file."
     
     try:
-        print(f"🧠 Calling Gemini API...")
+        print("🧠 Calling Gemini API...")
         
         # Generate response
         response = _gemini_model.generate_content(
@@ -343,7 +343,7 @@ async def call_gemini_api(prompt: str) -> str:
         
         # Extract text from response
         if response.text:
-            print(f"✅ Gemini response received")
+            print("✅ Gemini response received")
             return response.text.strip()
         else:
             return "No response generated from Gemini API."

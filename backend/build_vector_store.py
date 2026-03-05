@@ -223,7 +223,7 @@ def build_vector_store(documents: List[Dict[str, Any]]):
     try:
         client.delete_collection(name=COLLECTION_NAME)
         print(f"✓ Deleted existing collection: {COLLECTION_NAME}")
-    except:
+    except Exception:
         pass
     
     # Create new collection
@@ -264,7 +264,7 @@ def build_vector_store(documents: List[Dict[str, Any]]):
         documents=documents_text
     )
     
-    print(f"\n✅ Successfully built vector store!")
+    print("\n✅ Successfully built vector store!")
     print(f"   Location: {CHROMA_DB_DIR}")
     print(f"   Collection: {COLLECTION_NAME}")
     print(f"   Total documents: {len(documents)}")
