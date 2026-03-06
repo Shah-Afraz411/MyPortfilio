@@ -1,0 +1,24 @@
+# Render Blueprint - Backend Deployment Configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: portfolio-backend
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      cd backend && pip install -r requirements.txt
+    startCommand: |
+      cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # Must be set manually in Render dashboard
+      - key: ALLOWED_ORIGINS
+        sync: false  # Comma-separated frontend origins, e.g. https://your-portfolio.vercel.app
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: FORCE_REINGEST
+        value: "true"
+    healthCheckPath: /
+    autoDeploy: false  # We deploy via GitHub Actions

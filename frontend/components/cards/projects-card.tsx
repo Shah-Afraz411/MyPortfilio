@@ -75,7 +75,7 @@ export function ProjectsCard() {
 		setIsLoading(true);
 
 		try {
-			const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+			const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 			const response = await fetch(`${apiUrl}/chat/project/${selectedProject.id}`, {
 				method: "POST",
 				headers: {
