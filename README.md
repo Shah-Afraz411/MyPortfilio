@@ -8,7 +8,7 @@ An interactive portfolio powered by RAG (Retrieval-Augmented Generation) and kno
 
 ### What is This?
 
-This is an AI-powered portfolio website that allows visitors to interact with your professional information through natural language. Instead of static pages, users can ask questions like "What projects have you built?" or "Tell me about your AI experience" and get intelligent, context-aware responses.
+This is an AI-powered portfolio website that allows visitors to interact with Afraz professional information through natural language. Instead of static pages, users can ask questions like "What projects have you built?" or "Tell me about your AI experience" and get intelligent, context-aware responses.
 
 ### ✨ Key Features
 
