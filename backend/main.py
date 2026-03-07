@@ -23,12 +23,17 @@ from rag_engine import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Initialize RAG engine on startup"""
+    """Initialize RAG engine on startup (deferred to background)"""
     print("🚀 Starting up backend...")
 
-    # Check for FORCE_REINGEST environment variable
-    force_reingest = os.getenv("FORCE_REINGEST", "false").lower() == "true"
-    initialize_rag_engine(force_reingest=force_reingest)
+    # Defer heavy model loading to background so the port opens immediately
+    import asyncio
+
+    async def _init():
+        force_reingest = os.getenv("FORCE_REINGEST", "false").lower() == "true"
+        initialize_rag_engine(force_reingest=force_reingest)
+
+    asyncio.create_task(_init())
 
     yield
     print("👋 Shutting down backend...")
