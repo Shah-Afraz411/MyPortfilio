@@ -10,10 +10,6 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from dotenv import load_dotenv
-import chromadb
-from chromadb.config import Settings
-from sentence_transformers import SentenceTransformer
-import google.generativeai as genai
 
 # Load environment variables
 load_dotenv()
@@ -28,8 +24,8 @@ COLLECTION_NAME = "portfolio_data"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 # Global model instances (loaded once for efficiency)
-_embedding_model: Optional[SentenceTransformer] = None
-_chroma_client: Optional[chromadb.PersistentClient] = None
+_embedding_model = None
+_chroma_client = None
 _collection = None
 _gemini_model = None
 
@@ -43,6 +39,12 @@ def initialize_rag_engine(force_reingest=False):
         force_reingest: If True, delete existing vector store and recreate
     """
     global _embedding_model, _chroma_client, _collection, _gemini_model
+
+    # Lazy imports — keeps startup fast so uvicorn opens the port immediately
+    import chromadb
+    from chromadb.config import Settings
+    from sentence_transformers import SentenceTransformer
+    import google.generativeai as genai
 
     # Force recreate if flag is set
     if force_reingest and CHROMA_DB_DIR.exists():
@@ -325,6 +327,8 @@ async def call_gemini_api(prompt: str) -> str:
 
     try:
         print("🧠 Calling Gemini API...")
+
+        import google.generativeai as genai
 
         # Generate response
         response = _gemini_model.generate_content(
