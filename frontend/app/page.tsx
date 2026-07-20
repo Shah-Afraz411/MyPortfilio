@@ -27,11 +27,16 @@ const cards = [
 function ProgressIndicator({
 	progress,
 	labels,
+	swipePhase,
 }: {
 	progress: number;
 	labels: string[];
+	swipePhase: number;
 }) {
 	const activeIndex = Math.min(Math.floor(progress * labels.length), labels.length - 1);
+	// How many hidden sections remain beyond the current phase view
+	const hiddenCount = 2 - swipePhase;
+
 	return (
 		<div className="flex items-center gap-3">
 			{labels.map((label, i) => {
@@ -55,6 +60,22 @@ function ProgressIndicator({
 					</div>
 				);
 			})}
+			{/* Trailing hint dots — fade smoothly as phases reveal content */}
+			<div className={`flex items-center gap-1.5 transition-all duration-500 ${hiddenCount > 0 ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
+				<div className="w-4 h-px bg-border/60" />
+				<div className="flex items-center gap-1">
+					{[0, 1].map((dot) => (
+						<div
+							key={dot}
+							className={`rounded-full transition-all duration-500 ${
+								dot < hiddenCount
+									? 'w-1.5 h-1.5 bg-foreground/25'
+									: 'w-1 h-1 bg-foreground/8'
+							}`}
+						/>
+					))}
+				</div>
+			</div>
 		</div>
 	);
 }
@@ -372,7 +393,7 @@ export default function Home() {
 			{/* Progress bar with stronger backdrop blur */}
 			{!activeCard && (
 				<div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-white/90 dark:bg-card/90 backdrop-blur-xl shadow-lg">
-					<ProgressIndicator progress={scrollProgress} labels={currentSectionLabels} />
+					<ProgressIndicator progress={scrollProgress} labels={currentSectionLabels} swipePhase={swipePhase} />
 				</div>
 			)}
 
