@@ -18,6 +18,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 
+    
+    
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
@@ -42,3 +44,4 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 }
 
 export const useAudio = () => useContext(AudioContext);
+ 

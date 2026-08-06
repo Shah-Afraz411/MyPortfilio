@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "AI Portfolio",
+  title: "Syed Afraz Portfolio",
   description: "Modern AI-powered portfolio with minimal design",
 };
 
