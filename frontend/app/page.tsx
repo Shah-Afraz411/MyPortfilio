@@ -13,6 +13,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Download, Github, Linkedin, MessageSquare, FolderGit2, Zap, Briefcase, Award, BookOpen } from "lucide-react";
 import { SiPython, SiMongodb, SiFastapi, SiTensorflow, SiPytorch } from "react-icons/si";
 import { TbBrain, TbSql, TbSparkles, TbRobot } from "react-icons/tb";
+import { useAudio } from "@/components/audio-provider";
 
 type CardType = "chatbot" | "projects" | "skills" | "experience" | "certifications" | "publications" | null;
 
@@ -85,6 +86,7 @@ export default function Home() {
 	const [mounted, setMounted] = useState(false);
 	const [scrollProgress, setScrollProgress] = useState(0);
 	const [swipePhase, setSwipePhase] = useState(0);
+	const { playSound } = useAudio();
 	const containerRef = useRef<HTMLDivElement>(null);
 	const lenisRef = useRef<Lenis | null>(null);
 	const rafRef = useRef<number | null>(null);
@@ -317,8 +319,9 @@ export default function Home() {
 
 	// Enhanced back click with scroll restoration
 	const handleBackClick = useCallback(() => {
+		playSound("back");
 		setActiveCard(null);
-	}, []);
+	}, [playSound]);
 
 	// Download CV handler
 	const handleDownloadCV = async (e: React.MouseEvent) => {
@@ -455,6 +458,8 @@ export default function Home() {
 											whileTap={{ scale: 0.95 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
 											aria-label="GitHub Profile"
+												onMouseEnter={() => playSound("tag")}
+												onClick={() => playSound("click")}
 										>
 											<Github className="w-4 h-4" />
 										</motion.a>
@@ -468,6 +473,8 @@ export default function Home() {
 											whileTap={{ scale: 0.95 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
 											aria-label="LinkedIn Profile"
+												onMouseEnter={() => playSound("tag")}
+												onClick={() => playSound("click")}
 										>
 											<Linkedin className="w-4 h-4" />
 										</motion.a>
@@ -481,7 +488,7 @@ export default function Home() {
 									{/* Action Buttons */}
 									<div className="flex flex-wrap items-center gap-4 mb-8">
 										<motion.button
-											onClick={handleDownloadCV}
+											onClick={(e) => { playSound("click"); handleDownloadCV(e); }}
 											className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-foreground text-background hover:bg-foreground/90 transition-all text-base font-medium shadow-lg hover:shadow-xl"
 											whileHover={{ scale: 1.05, y: -2 }}
 											whileTap={{ scale: 0.95 }}
@@ -513,6 +520,7 @@ export default function Home() {
 									{/* Skills Tags with Proper Icons */}
 									<div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -521,6 +529,7 @@ export default function Home() {
 											<span>Python</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -529,6 +538,7 @@ export default function Home() {
 											<span>FastAPI</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -537,6 +547,7 @@ export default function Home() {
 											<span>AI/ML</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -545,6 +556,7 @@ export default function Home() {
 											<span>Agentic AI</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -553,6 +565,7 @@ export default function Home() {
 											<span>TensorFlow</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -561,6 +574,7 @@ export default function Home() {
 											<span>PyTorch</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -569,6 +583,7 @@ export default function Home() {
 											<span>SQL</span>
 										</motion.span>
 										<motion.span 
+											onMouseEnter={() => playSound("tag")}
 											className="px-4 py-2 rounded-full border border-border bg-background hover:border-foreground/40 hover:bg-foreground/5 transition-all cursor-default inline-flex items-center gap-2"
 											whileHover={{ scale: 1.1, y: -2 }}
 											transition={{ type: "spring", stiffness: 400, damping: 10 }}
@@ -584,7 +599,8 @@ export default function Home() {
 						{/* Chatbot Card */}
 						<section className="flex-shrink-0 w-[90vw] sm:w-[78vw] md:w-[68vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("chatbot"); }}
+								onClick={() => { playSound("navigate"); savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("chatbot"); }}
+								onMouseEnter={() => playSound("hover")}
 								className="cursor-pointer group w-full h-[85vh] sm:h-[78vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-6 sm:p-10 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-y-auto"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -640,7 +656,8 @@ export default function Home() {
 						{/* Projects Card */}
 						<section className="flex-shrink-0 w-[90vw] sm:w-[77vw] md:w-[67vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("projects"); }}
+								onClick={() => { playSound("navigate"); savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard("projects"); }}
+								onMouseEnter={() => playSound("hover")}
 								className="cursor-pointer group w-full h-[85vh] sm:h-[76vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-6 sm:p-10 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-y-auto"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -686,7 +703,8 @@ export default function Home() {
 						{/* Dynamic Card - Position 4 (Skills / Certifications) */}
 						<section className="flex-shrink-0 w-[90vw] sm:w-[76vw] md:w-[66vw] h-screen flex items-center px-4">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase < 2 ? "skills" : "certifications"); }}
+								onClick={() => { playSound("navigate"); savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase < 2 ? "skills" : "certifications"); }}
+								onMouseEnter={() => playSound("hover")}
 								className="cursor-pointer group w-full h-[85vh] sm:h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-6 sm:p-10 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-hidden"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -736,14 +754,21 @@ export default function Home() {
 												<p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-10">
 													Professional certifications and credentials.
 												</p>
-												<div className="space-y-3 max-w-lg">
-													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
-														<Award className="w-5 h-5 text-foreground/30" />
-														<div>
-															<p className="text-sm font-medium">Data coming soon</p>
-															<p className="text-xs text-muted-foreground/60">Certifications will be listed here</p>
+												<div className="space-y-2.5 max-w-lg">
+													{[
+														{ name: "ML Specialization", issuer: "Stanford · Coursera" },
+														{ name: "LangChain for LLM Apps", issuer: "DeepLearning.AI" },
+														{ name: "Advanced Learning Algorithms", issuer: "Stanford · Coursera" },
+													].map((c, i) => (
+														<div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+															<Award className="w-4 h-4 text-foreground/40" />
+															<div>
+																<p className="text-sm font-medium">{c.name}</p>
+																<p className="text-[11px] text-muted-foreground/50">{c.issuer}</p>
+															</div>
 														</div>
-													</div>
+													))}
+													<p className="text-xs text-muted-foreground/40 pl-1">+4 more credentials</p>
 												</div>
 											</div>
 											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
@@ -759,7 +784,8 @@ export default function Home() {
 						{/* Dynamic Card - Position 5 (Experience / Certifications / Publications) */}
 						<section className="flex-shrink-0 w-[90vw] sm:w-[76vw] md:w-[66vw] h-screen flex items-center px-4 pr-8 md:pr-16">
 							<motion.div
-								onClick={() => { savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase === 0 ? "experience" : swipePhase === 1 ? "certifications" : "publications"); }}
+								onClick={() => { playSound("navigate"); savedScrollRef.current = containerRef.current?.scrollLeft ?? 0; savedProgressRef.current = scrollProgress; setActiveCard(swipePhase === 0 ? "experience" : swipePhase === 1 ? "certifications" : "publications"); }}
+								onMouseEnter={() => playSound("hover")}
 								className="cursor-pointer group w-full h-[85vh] sm:h-[74vh] border border-border bg-white/80 dark:bg-card/80 backdrop-blur-xl p-6 sm:p-10 md:p-16 hover:bg-white/90 dark:hover:bg-card/90 transition-colors shadow-2xl rounded-xl overflow-hidden relative"
 								whileHover={{ scale: 1.02, y: -8, rotateX: 2 }}
 								transition={{ duration: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
@@ -811,14 +837,21 @@ export default function Home() {
 												</div>
 												<h2 className="text-4xl sm:text-5xl md:text-6xl font-medium mb-4 group-hover:text-foreground/80 transition-colors">Certifications</h2>
 												<p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-10">Professional certifications and credentials.</p>
-												<div className="space-y-3 max-w-lg">
-													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
-														<Award className="w-5 h-5 text-foreground/30" />
-														<div>
-															<p className="text-sm font-medium">Data coming soon</p>
-															<p className="text-xs text-muted-foreground/60">Certifications will be listed here</p>
+												<div className="space-y-2.5 max-w-lg">
+													{[
+														{ name: "ML Specialization", issuer: "Stanford · Coursera" },
+														{ name: "LangChain for LLM Apps", issuer: "DeepLearning.AI" },
+														{ name: "Advanced Learning Algorithms", issuer: "Stanford · Coursera" },
+													].map((c, i) => (
+														<div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
+															<Award className="w-4 h-4 text-foreground/40" />
+															<div>
+																<p className="text-sm font-medium">{c.name}</p>
+																<p className="text-[11px] text-muted-foreground/50">{c.issuer}</p>
+															</div>
 														</div>
-													</div>
+													))}
+													<p className="text-xs text-muted-foreground/40 pl-1">+4 more credentials</p>
 												</div>
 											</div>
 											<div className="flex items-center gap-2 text-lg text-muted-foreground group-hover:text-foreground transition-colors">
@@ -839,11 +872,16 @@ export default function Home() {
 												<p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-xl mb-6 sm:mb-10">Research papers and publications.</p>
 												<div className="space-y-3 max-w-lg">
 													<div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-foreground/5 border border-border group-hover:border-foreground/20 transition-colors">
-														<BookOpen className="w-5 h-5 text-foreground/30" />
+														<BookOpen className="w-5 h-5 text-foreground/50" />
 														<div>
-															<p className="text-sm font-medium">Data coming soon</p>
-															<p className="text-xs text-muted-foreground/60">Publications will be listed here</p>
+															<p className="text-sm font-medium">Biofuel Production Process</p>
+															<p className="text-xs text-muted-foreground/60">China International UGS Conference · 2025</p>
 														</div>
+													</div>
+													<div className="flex flex-wrap gap-1.5 px-1">
+														{["Process Automation", "Industrial IoT", "SCADA", "Python"].map((tag) => (
+															<span key={tag} className="text-[10px] px-2 py-0.5 rounded-full bg-foreground/5 border border-border text-muted-foreground/50">{tag}</span>
+														))}
 													</div>
 												</div>
 											</div>
@@ -860,7 +898,7 @@ export default function Home() {
 									{[0, 1, 2].map((phase) => (
 										<button
 											key={phase}
-											onClick={(e) => { e.stopPropagation(); setSwipePhase(phase); }}
+											onClick={(e) => { e.stopPropagation(); playSound("swoosh"); setSwipePhase(phase); }}
 											className={`rounded-full transition-all duration-300 ${
 												swipePhase === phase ? 'w-6 h-1.5 bg-foreground/50' : 'w-1.5 h-1.5 bg-foreground/15 hover:bg-foreground/30'
 											}`}
