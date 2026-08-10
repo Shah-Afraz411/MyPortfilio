@@ -3,6 +3,7 @@
 import { ExternalLink, Github, X, Send } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { useAudio } from "@/components/audio-provider";
 
 const projects = [
 	{
@@ -59,6 +60,7 @@ interface Project {
 }
 
 export function ProjectsCard() {
+	const { playSound } = useAudio();
 	const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 	const [message, setMessage] = useState("");
 	const [chatMessages, setChatMessages] = useState<Array<{ role: string; content: string }>>([]);
@@ -73,6 +75,7 @@ export function ProjectsCard() {
 
 		setChatMessages((prev) => [...prev, { role: "user", content: userMessage }]);
 		setIsLoading(true);
+		playSound("send");
 
 		try {
 			const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -105,11 +108,13 @@ export function ProjectsCard() {
 	};
 
 	const handleProjectClick = (project: Project) => {
+		playSound("click");
 		setSelectedProject(project);
 		setChatMessages([]);
 	};
 
 	const handleCloseModal = () => {
+		playSound("back");
 		setSelectedProject(null);
 		setChatMessages([]);
 		setMessage("");
@@ -134,6 +139,7 @@ export function ProjectsCard() {
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: index * 0.1 }}
 						onClick={() => handleProjectClick(project)}
+						onMouseEnter={() => playSound("hover")}
 						className="group cursor-pointer border border-border rounded-xl overflow-hidden hover:border-foreground/30 transition-all bg-card/50 hover:bg-card relative"
 						whileHover={{ y: -4 }}
 					>

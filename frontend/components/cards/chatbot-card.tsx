@@ -5,6 +5,7 @@ import { Send, FileText, Sparkles } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAudio } from "@/components/audio-provider";
 
 type Message = {
   role: "user" | "assistant";
@@ -20,6 +21,7 @@ const suggestedQuestions = [
 ];
 
 export function ChatbotCard() {
+  const { playSound } = useAudio();
   const [messages, setMessages] = useState<Message[]>(
     [
       {
@@ -46,6 +48,7 @@ export function ChatbotCard() {
     setShowSuggestions(false);
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
     setIsLoading(true);
+    playSound("send");
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -60,6 +63,7 @@ export function ChatbotCard() {
       }
 
       const data = await response.json();
+      playSound("receive");
       setMessages((prev) => [
         ...prev,
         { 
