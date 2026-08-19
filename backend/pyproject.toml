@@ -1,0 +1,14 @@
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = [
+    # Endpoints and scripts intentionally catch Exception at their outer boundary
+    # (API handlers, CLI scripts) so one bad request/file can't crash the process;
+    # the error is logged/returned instead. Narrowing these would just chase every
+    # possible exception type from third-party libs (chromadb, google-generativeai).
+    "BLE001",
+    # Cleanup of a collection that may not exist yet (delete-if-present) is
+    # deliberately a no-op on failure.
+    "S110",
+]

@@ -7,13 +7,14 @@ Usage:
     python build_vector_store.py
 """
 
-import os
 import json
-import yaml
+import os
 import warnings
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any
+
 import chromadb
+import yaml
 from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 
@@ -31,7 +32,7 @@ COLLECTION_NAME = "portfolio_data"
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
-def load_markdown_files(projects_dir: Path) -> List[Dict[str, Any]]:
+def load_markdown_files(projects_dir: Path) -> list[dict[str, Any]]:
     """
     Load all markdown files from the projects directory.
 
@@ -70,7 +71,7 @@ def load_markdown_files(projects_dir: Path) -> List[Dict[str, Any]]:
     return documents
 
 
-def load_yaml_file(yaml_path: Path) -> List[Dict[str, Any]]:
+def load_yaml_file(yaml_path: Path) -> list[dict[str, Any]]:
     """
     Load and parse YAML file (skills).
 
@@ -111,7 +112,7 @@ def load_yaml_file(yaml_path: Path) -> List[Dict[str, Any]]:
     return documents
 
 
-def load_json_file(json_path: Path) -> List[Dict[str, Any]]:
+def load_json_file(json_path: Path) -> list[dict[str, Any]]:
     """
     Load and parse JSON file (timeline).
 
@@ -168,7 +169,7 @@ def load_json_file(json_path: Path) -> List[Dict[str, Any]]:
     return documents
 
 
-def load_all_documents() -> List[Dict[str, Any]]:
+def load_all_documents() -> list[dict[str, Any]]:
     """
     Load all documents from the data directory.
 
@@ -196,7 +197,7 @@ def load_all_documents() -> List[Dict[str, Any]]:
     return all_documents
 
 
-def build_vector_store(documents: List[Dict[str, Any]]):
+def build_vector_store(documents: list[dict[str, Any]]):
     """
     Build the vector store using sentence-transformers and ChromaDB.
 

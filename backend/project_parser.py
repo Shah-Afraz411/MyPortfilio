@@ -2,12 +2,12 @@
 Project Parser for reading project markdown files
 """
 
-from pathlib import Path
 import re
-from typing import Dict, List, Optional, Any
+from pathlib import Path
+from typing import Any
 
 
-def get_project_content_for_scoped_chat(project_id: str) -> Optional[str]:
+def get_project_content_for_scoped_chat(project_id: str) -> str | None:
     """Get project content from root data/projects folder"""
     backend_dir = Path(__file__).resolve().parent
     data_folder = backend_dir.parent / "data" / "projects"  # Root data folder
@@ -33,7 +33,7 @@ def get_project_content_for_scoped_chat(project_id: str) -> Optional[str]:
         return None
 
 
-def parse_project_markdown(project_id: str) -> Optional[Dict[str, Any]]:
+def parse_project_markdown(project_id: str) -> dict[str, Any] | None:
     """Parse project markdown from root data/projects folder"""
     backend_dir = Path(__file__).resolve().parent
     data_folder = backend_dir.parent / "data" / "projects"
@@ -57,7 +57,7 @@ def parse_project_markdown(project_id: str) -> Optional[Dict[str, Any]]:
             match = re.search(pattern, content, re.DOTALL)
             return match.group(1).strip() if match else ""
 
-        def extract_list_items(text: str) -> List[str]:
+        def extract_list_items(text: str) -> list[str]:
             """Extract bullet points from text"""
             lines = text.split("\n")
             items = []

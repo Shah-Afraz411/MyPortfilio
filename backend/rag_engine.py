@@ -8,7 +8,8 @@ Uses a local Hugging Face model for LLM-powered answer generation.
 
 import os
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import Any
+
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -33,26 +34,20 @@ _gemini_model = None
 def initialize_rag_engine(force_reingest=False):
     """
     Initialize the RAG engine by loading the embedding model,
-    configuring Gemini API, and connecting to ChromaDB.
+    configuring Gemini API, connecting to ChromaDB, and making sure the
+    portfolio_data collection exists — building it from the data folder
+    if it's missing or force_reingest is requested.
 
     Args:
-        force_reingest: If True, delete existing vector store and recreate
+        force_reingest: If True, delete the existing collection and rebuild it
     """
     global _embedding_model, _chroma_client, _collection, _gemini_model
 
     # Lazy imports — keeps startup fast so uvicorn opens the port immediately
     import chromadb
+    import google.generativeai as genai
     from chromadb.config import Settings
     from sentence_transformers import SentenceTransformer
-    import google.generativeai as genai
-
-    # Force recreate if flag is set
-    if force_reingest and CHROMA_DB_DIR.exists():
-        print("🔄 Force re-ingesting data - deleting existing vector store...")
-        import shutil
-
-        shutil.rmtree(CHROMA_DB_DIR)
-        print("✓ Deleted existing vector store")
 
     if _embedding_model is None:
         print("🤖 Loading embedding model...")
@@ -71,22 +66,56 @@ def initialize_rag_engine(force_reingest=False):
             path=str(CHROMA_DB_DIR), settings=Settings(anonymized_telemetry=False)
         )
 
-        try:
-            _collection = _chroma_client.get_collection(name=COLLECTION_NAME)
-            print(f"✓ Connected to collection: {COLLECTION_NAME}")
-        except Exception as e:
-            print(f"⚠️  Warning: Could not connect to collection: {e}")
-            print("   Call /admin/reingest endpoint to create the vector store")
-            _collection = None
+    existing_names = {c.name for c in _chroma_client.list_collections()}
 
-    # Use root data folder, not backend/data
-    backend_dir = Path(__file__).resolve().parent
-    data_folder = backend_dir.parent / "data"  # Goes up to project root, then into data
+    if force_reingest and COLLECTION_NAME in existing_names:
+        print("🔄 Force re-ingest requested - deleting existing collection...")
+        _chroma_client.delete_collection(name=COLLECTION_NAME)
+        existing_names.discard(COLLECTION_NAME)
+        print("✓ Deleted existing collection")
 
-    print(f"📁 Looking for data in: {data_folder}")
+    if COLLECTION_NAME in existing_names:
+        _collection = _chroma_client.get_collection(name=COLLECTION_NAME)
+        print(f"✓ Connected to collection: {COLLECTION_NAME}")
+    else:
+        print(
+            f"📥 Collection '{COLLECTION_NAME}' not found — building vector store from data folder..."
+        )
+        _rebuild_collection()
 
 
-def get_relevant_docs(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+def _rebuild_collection():
+    """Build the portfolio_data collection from scratch using the data folder."""
+    global _collection
+
+    from build_vector_store import load_all_documents
+
+    documents = load_all_documents()
+    if not documents:
+        print("⚠️  No documents found in the data folder — vector store will be empty")
+        _collection = None
+        return
+
+    collection = _chroma_client.create_collection(
+        name=COLLECTION_NAME, metadata={"description": "Portfolio data embeddings"}
+    )
+
+    ids = []
+    embeddings = []
+    metadatas = []
+    texts = []
+    for idx, doc in enumerate(documents):
+        ids.append(f"doc_{idx}")
+        embeddings.append(_embedding_model.encode(doc["content"]).tolist())
+        metadatas.append(doc["metadata"])
+        texts.append(doc["content"])
+
+    collection.add(ids=ids, embeddings=embeddings, metadatas=metadatas, documents=texts)
+    _collection = collection
+    print(f"✓ Built vector store with {len(documents)} document chunks")
+
+
+def get_relevant_docs(query: str, top_k: int = 3) -> list[dict[str, Any]]:
     """
     Retrieve the most relevant documents for a given query.
 
@@ -106,8 +135,6 @@ def get_relevant_docs(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         ...     print(f"Source: {doc['metadata']['source']}")
         ...     print(f"Content: {doc['content'][:100]}...")
     """
-    global _embedding_model, _collection
-
     # Initialize if not already done
     if _embedding_model is None or _collection is None:
         initialize_rag_engine()
@@ -144,7 +171,7 @@ def get_relevant_docs(query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         return []
 
 
-def get_docs_by_type(doc_type: str, limit: int = 10) -> List[Dict[str, Any]]:
+def get_docs_by_type(doc_type: str, limit: int = 10) -> list[dict[str, Any]]:
     """
     Retrieve documents by type (e.g., 'project', 'skills', 'timeline').
 
@@ -155,8 +182,6 @@ def get_docs_by_type(doc_type: str, limit: int = 10) -> List[Dict[str, Any]]:
     Returns:
         List of documents matching the type
     """
-    global _collection
-
     if _collection is None:
         initialize_rag_engine()
 
@@ -183,8 +208,8 @@ def get_docs_by_type(doc_type: str, limit: int = 10) -> List[Dict[str, Any]]:
 
 
 def search_by_metadata(
-    metadata_filters: Dict[str, Any], limit: int = 10
-) -> List[Dict[str, Any]]:
+    metadata_filters: dict[str, Any], limit: int = 10
+) -> list[dict[str, Any]]:
     """
     Search documents using metadata filters.
 
@@ -198,8 +223,6 @@ def search_by_metadata(
     Example:
         >>> docs = search_by_metadata({"type": "project", "source": "ai_portfolio.md"})
     """
-    global _collection
-
     if _collection is None:
         initialize_rag_engine()
 
@@ -225,7 +248,7 @@ def search_by_metadata(
         return []
 
 
-def format_docs_for_context(docs: List[Dict[str, Any]], max_length: int = 2000) -> str:
+def format_docs_for_context(docs: list[dict[str, Any]], max_length: int = 2000) -> str:
     """
     Format retrieved documents into a single context string for LLM prompting.
 
@@ -264,15 +287,13 @@ def format_docs_for_context(docs: List[Dict[str, Any]], max_length: int = 2000) 
     return "\n".join(context_parts)
 
 
-def get_collection_stats() -> Dict[str, Any]:
+def get_collection_stats() -> dict[str, Any]:
     """
     Get statistics about the vector store collection.
 
     Returns:
         Dictionary with collection statistics
     """
-    global _collection
-
     if _collection is None:
         initialize_rag_engine()
 
@@ -316,8 +337,6 @@ async def call_gemini_api(prompt: str) -> str:
     Returns:
         Generated text from the model
     """
-    global _gemini_model
-
     # Initialize if not already done
     if _gemini_model is None:
         initialize_rag_engine()
@@ -350,10 +369,10 @@ async def call_gemini_api(prompt: str) -> str:
 
     except Exception as e:
         print(f"Error calling Gemini API: {e}")
-        return f"An error occurred while generating the response: {str(e)}"
+        return f"An error occurred while generating the response: {e!s}"
 
 
-def generate_fallback_answer(query: str, docs: List[Dict[str, Any]]) -> str:
+def generate_fallback_answer(query: str, docs: list[dict[str, Any]]) -> str:
     """
     Generate a contextual answer from retrieved documents without LLM.
     Used as fallback when LLM is unavailable.
@@ -379,7 +398,7 @@ def generate_fallback_answer(query: str, docs: List[Dict[str, Any]]) -> str:
     return "\n\n".join(answer_parts)
 
 
-async def generate_answer(query: str, docs: List[Dict[str, Any]]) -> str:
+async def generate_answer(query: str, docs: list[dict[str, Any]]) -> str:
     """
     Generate a natural language answer using retrieved documents and LLM.
 
@@ -422,8 +441,8 @@ Provide a clear, professional, and conversational answer:"""
 
 
 async def generate_answer_with_sources(
-    query: str, docs: List[Dict[str, Any]]
-) -> Dict[str, Any]:
+    query: str, docs: list[dict[str, Any]]
+) -> dict[str, Any]:
     """
     Generate answer with source attribution.
 
