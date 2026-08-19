@@ -3,21 +3,21 @@ FastAPI backend for AI Portfolio
 Provides endpoints for RAG-powered chat and project-scoped queries
 """
 
+import os
+from contextlib import asynccontextmanager
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from typing import List, Optional
-from contextlib import asynccontextmanager
-from pathlib import Path
-import os
 
 # Import RAG engine
 from rag_engine import (
-    initialize_rag_engine,
-    get_relevant_docs,
-    get_collection_stats,
     generate_answer_with_sources,
+    get_collection_stats,
+    get_relevant_docs,
+    initialize_rag_engine,
 )
 
 
@@ -63,7 +63,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
-    sources: Optional[List[str]] = []
+    sources: list[str] | None = []
 
 
 # CV Download endpoint
@@ -127,11 +127,11 @@ async def download_cv():
     except HTTPException:
         raise
     except Exception as e:
-        print(f"❌ Error retrieving CV: {str(e)}")
+        print(f"❌ Error retrieving CV: {e!s}")
         import traceback
 
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Error retrieving CV: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving CV: {e!s}")
 
 
 # Root endpoint
@@ -253,89 +253,20 @@ async def chat_project_scoped(project_id: str, request: ChatRequest):
 async def manual_reingest():
     """Manually trigger complete data re-ingestion and vector store rebuild"""
     try:
-        import shutil
-        from pathlib import Path
+        import asyncio
 
-        chroma_path = Path(__file__).parent / "chroma_db"
+        print("🔄 Reingesting vector store...")
+        await asyncio.to_thread(initialize_rag_engine, force_reingest=True)
+        print("✓ Vector store reingested")
 
-        if chroma_path.exists():
-            print("🗑️  Deleting existing vector store...")
-            shutil.rmtree(chroma_path)
-            print("✓ Vector store deleted")
-
-        # Reinitialize RAG engine
-        print("🔄 Reinitializing RAG engine...")
-        initialize_rag_engine(force_reingest=False)
-        print("✓ RAG engine reinitialized")
-
-        # Now rebuild the vector store by reading all data files
-        print("📥 Rebuilding vector store from data files...")
-
-        from sentence_transformers import SentenceTransformer
-        import chromadb
-        from chromadb.config import Settings
-
-        # Get paths
-        backend_dir = Path(__file__).parent
-        data_folder = backend_dir.parent / "data"
-        projects_folder = data_folder / "projects"
-
-        # Initialize embedding model and ChromaDB
-        embedding_model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
-        chroma_client = chromadb.PersistentClient(
-            path=str(chroma_path), settings=Settings(anonymized_telemetry=False)
-        )
-        collection = chroma_client.create_collection(name="portfolio_data")
-
-        # Read and embed all project files
-        document_id = 0
-        total_chunks = 0
-
-        if projects_folder.exists():
-            for project_file in projects_folder.glob("*.md"):
-                print(f"📄 Processing: {project_file.name}")
-
-                with open(project_file, "r", encoding="utf-8") as f:
-                    content = f.read()
-
-                # Simple chunking: split by paragraphs
-                chunks = [p.strip() for p in content.split("\n\n") if p.strip()]
-
-                for chunk in chunks:
-                    if len(chunk) > 50:  # Only add meaningful chunks
-                        embedding = embedding_model.encode(chunk).tolist()
-
-                        collection.add(
-                            ids=[f"doc_{document_id}"],
-                            embeddings=[embedding],
-                            documents=[chunk],
-                            metadatas=[
-                                {
-                                    "source": project_file.name,
-                                    "type": "project",
-                                    "project_id": project_file.stem,
-                                }
-                            ],
-                        )
-                        document_id += 1
-                        total_chunks += 1
-
-        print(
-            f"✓ Successfully ingested {total_chunks} chunks from {len(list(projects_folder.glob('*.md')))} project files"
-        )
-
-        return {
-            "status": "success",
-            "message": f"Vector store rebuilt with {total_chunks} document chunks",
-            "projects_processed": len(list(projects_folder.glob("*.md"))),
-        }
+        return {"status": "success", **get_collection_stats()}
 
     except Exception as e:
         print(f"❌ Error during reingest: {e}")
         import traceback
 
         traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 
 if __name__ == "__main__":

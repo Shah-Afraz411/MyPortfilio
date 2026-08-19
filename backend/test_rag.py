@@ -4,11 +4,11 @@ Demonstrates how to use the RAG functions to retrieve documents
 """
 
 from rag_engine import (
-    initialize_rag_engine,
-    get_relevant_docs,
-    get_docs_by_type,
-    get_collection_stats,
     format_docs_for_context,
+    get_collection_stats,
+    get_docs_by_type,
+    get_relevant_docs,
+    initialize_rag_engine,
 )
 
 
